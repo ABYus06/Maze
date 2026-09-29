@@ -101,7 +101,7 @@ class MazeClass:
         self.maze[ self.end_point[1] ][ self.end_point[0] ] = Cell.END
         
 
-    def create_maze_layout(self):
+    def create_maze_layout( self ):
 
         self.maze = [ [Cell.WALL for _ in range(self.grid_width)] for _ in range(self.grid_height) ]
         self.path = []
@@ -109,35 +109,4 @@ class MazeClass:
         self.depth_first_search(1, 1)
         self.select_end_and_start_points()
 
-        return self.maze, self.path, self.start_point, self.end_point
-
-   
-    def draw_maze( self ):
-        cell_size = self.cell_size
-
-        for x in range( self.grid_width ):
-            for y in range( self.grid_height ):
-                colour = CELL_COLOURS[ self.maze[y][x] ]
-                pygame.draw.rect( self.screen, colour, (x * cell_size, y * cell_size, cell_size, cell_size) )
-
-
-    def run(self):
-
-        self.create_maze_layout()
-
-        running = True
-
-        while running:
-
-            for event in pygame.event.get():
-
-                if event.type == pygame.QUIT:
-                    running = False
-
-            self.draw_maze()
-
-            pygame.display.flip()
-
-            self.clock.tick(60)
-
-        pygame.quit()
+        return self.maze, self.path, self.start_point, self.end_point, CELL_COLOURS
