@@ -1,5 +1,5 @@
-from maze import MazeClass
+from maze_creator import MazeClass
 
 if __name__ == "__main__":
-    maze = MazeClass()
-    maze.Run()
+    maze = MazeClass( 50, 50, 10 )
+    maze.run()
