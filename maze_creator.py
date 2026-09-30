@@ -1,5 +1,4 @@
 
-import pygame
 import random
 from enum import IntEnum
 
@@ -31,10 +30,6 @@ class MazeClass:
         self.grid_height = grid_height
         self.grid_width = grid_width
         self.cell_size = cell_size
-
-        pygame.init()
-        self.clock = pygame.time.Clock()
-        self.screen = pygame.display.set_mode( (grid_width * cell_size, grid_height * cell_size) )
 
         self.maze = None
         self.path = None
