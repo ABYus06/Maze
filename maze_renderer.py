@@ -17,9 +17,7 @@ def run( maze, grid_height, grid_width, cell_size, CELL_COLOURS ):
     running = True
         
     while running:
-        
         for event in pygame.event.get():
-        
             if event.type == pygame.QUIT:
                 running = False
         

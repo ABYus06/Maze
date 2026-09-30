@@ -79,7 +79,22 @@ class MazeClass:
                 break
 
             else:
-                stack.pop()   
+                stack.pop()
+
+    # Alter the maze slightly
+    def alter_maze( self ):
+        for x in range( self.grid_width ):
+            for y in range( self.grid_width ):
+                if (self.maze[y][x] != Cell.WALL):
+                    continue
+                if ( x > self.grid_width - 2 or x == 0 ):
+                    continue
+                if ( y > self.grid_height - 2 or y == 0 ):
+                    continue
+                
+                if random.randint( 1, 100 ) <= 10:
+                    self.maze[y][x] = Cell.PATH
+                    
 
 
     # Create the start and end point of the maze
@@ -107,6 +122,7 @@ class MazeClass:
         self.path = []
 
         self.depth_first_search(1, 1)
+        self.alter_maze()
         self.select_end_and_start_points()
 
         return self.maze, self.path, self.start_point, self.end_point, CELL_COLOURS
