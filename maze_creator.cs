@@ -1,16 +1,6 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
-
-using random;
-
-// Declare the directions
-int[,] DIRECTIONS = new int[,]
-{
-    (0, 2),
-    (2, 0),
-    (0, -2),
-    (-2, 0) 
-};
 
 public static class Shuffler<T>
 {
@@ -30,34 +20,35 @@ public static class Shuffler<T>
     }
 }
 
-// Create the Cell class
-public class CellClass
-{
-    enum CellTypes
-    {
-        Wall = 0,
-        Path = 1,
-        Start = 2,
-        End = 3,
-    }
 
-    ( string CellType, int Colour )[] CELL_COLOURS = new ( string, int )[]
-    {
-        CellClass.CellTypes.Wall = (100, 100, 100),
-        CellClass.CellTypes.Path = (0, 0, 0),
-        CellClass.CellTypes.Start = (255, 0, 0),
-        CellClass.CellTypes.End = (0, 255, 0),
-    };
+public enum CellTypes
+{
+    Wall = 0,
+    Path = 1,
+    Start = 2,
+    End = 3,
 }
 
 public class MazeClass
 {
+    // Declare the directions
+    private static ( int directionX, int directionY )[] DIRECTIONS =
+    {
+        (0, 2),
+        (2, 0),
+        (0, -2),
+        (-2, 0) 
+    };
+
+
     private int gridWidth;
     private int gridHeight;
     private int cellSize;
 
-    public int[,] maze = null;
-    public int[,] path = null;
+    private Random random = new Random();
+
+    public CellTypes[,] maze = null;
+    public CellTypes[,] path = null;
     public int[,] startPoint = null;
     public int[,] endPoint = null;
     public MazeClass( int gridWidth, int gridHeight, int cellSize )
@@ -71,80 +62,112 @@ public class MazeClass
             gridHeight += 1;
         }
 
-        gridWidth = gridWidth;
-        gridHeight = gridHeight;
-        cellSize = cellSize;
+        this.gridWidth = gridWidth;
+        this.gridHeight = gridHeight;
+        this.cellSize = cellSize;
+
+        this.maze = new CellTypes[gridHeight, gridWidth];
+
     }
 
     // Check if the next cell will be in bounds
-    public CheckBounds( int x, int y )
+    public bool CheckBounds( int x, int y )
     {
-        if ( 0 <= x < this.gridWidth && 0 <= y < this.gridHeight )
+        if ( x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight )
+        {
             return true;
+        }
         return false;
     }
 
     // Iterative DFS to create the maze path
-    public DepthFirstSearch( int x, int y )
+    public void DepthFirstSearch( int x, int y )
     {
-        Stack<int> currentCell = new Stack<int>();
-        this.maze[x][y] = CellClass.CellTypes.Path;
+        Stack<(int x, int y)> currentCell = new Stack<(int x, int y)>();
+        this.maze[x, y] = CellTypes.Path;
+        currentCell.Push((x, y));
 
-        while ( currentCell )
+        while ( currentCell.Count > 0 )
         {
-            ( currentX, currentY ) = currentCell[ -1 ];
+            bool moved = false;
 
-            int[,] shuffledDirections = new int[,];
-            Array.Copy(DIRECTIONS, 0, shuffledDirections, 0, source.Length);
-            Shuffler<int>.Shuffle(shuffledDirections);
+            var (currentX, currentY) = currentCell.Peek();
+            var shuffledDirections = DIRECTIONS.ToArray();
+            Shuffler<(int directionX, int directionY)>.Shuffle(shuffledDirections);
 
-            foreach ( int (directionX, directionY) in shuffledDirections )
+            foreach ( var (directionX, directionY) in shuffledDirections )
             {
                 int nextX = currentX + directionX;
                 int nextY = currentY + directionY;
+
+                // Check if the destination is within the bounds of the maze
+                if ( CheckBounds( nextX, nextY ) == false )
+                {
+                    continue;
+                }
+
+                // Check if the next cell has not already been visited
+                if ( this.maze[nextX, nextY] != CellTypes.Wall )
+                {
+                    continue;
+                }
+
+                this.maze[ (currentX + directionX / 2), (currentY + directionY / 2) ] = CellTypes.Path;
+                this.maze[ nextX, nextY ] = CellTypes.Path;
+                currentCell.Push((nextX, nextY));
+                moved = true;
+                break;
             }
 
-            // Check if the destination is within the bounds of the maze
-            if ( MazeClass.CheckBounds( nextX, nextY ) == false )
+            if ( moved == false )
             {
-                continue;
+                currentCell.Pop();
             }
-
-            // Check if the next cell has not already been visited
-            if ( this.maze[nextX][nextY] != CellClass.CellTypes.Wall )
-            {
-                continue;
-            }
-
-            this.maze[ (currentX + directionX / 2) ][ (currentY + directionY / 2) ] = CellClass.CellTypes.Path;
-            this.maze[ nextX ][ nextY ] = CellClass.CellTypes.Path;
-            currentCell.Push((nextX, nextY));
-            break;
         }
-        currentCell.Pop();
     }
 
-    public CreateMazeLayout()
+    public void CreateMazeLayout()
     {
         // Create the maze full of walls
-        Cell[,] maze = new Cell[gridHeight, gridWidth];
-
-        for (int i = 0; i < gridHeight; i++)
+        for (int y = 0; y < gridHeight; y++)
         {
-            for (int j = 0; j < gridWidth; j++)
+            for (int x = 0; x < gridWidth; x++)
             {
-                maze[i, j] = Cell.WALL;
+                this.maze[y, x] = CellTypes.Wall;
             }
         }
 
-        MazeClass.DepthFirstSearch(1, 1);
+        this.DepthFirstSearch(1, 1);
     }
+
+    public void PrintMaze()
+    {
+        for (int y = 0; y < gridHeight; y++)
+        {
+            for (int x = 0; x < gridWidth; x++)
+            {
+                if (maze[y, x] == CellTypes.Wall)
+                {
+                    Console.Write("##");
+                }
+                else
+                {
+                    Console.Write("  ");
+                }
+            }
+
+            Console.WriteLine();
+        }
+    }
+
 }
 
 class Program
 {
     static void Main()
     {
-        MazeClass.CreateMazeLayout();
+        MazeClass maze = new MazeClass(51, 51, 10);
+        maze.CreateMazeLayout();
+        maze.PrintMaze();
     }
 }
